@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pytest
+transformers
+torch
+llama-cpp-python
+more-itertools
