@@ -193,7 +193,7 @@ export function ArithmeticCoder() {
         }
       }
     } catch (error) {
-      toast.error("Failed to decompress. Make sure the backend is running on localhost:8000")
+      toast.error("Failed to decompress, Make sure the backend is running on localhost:8000")
       setDecompressProgress(null)
     }
   }
