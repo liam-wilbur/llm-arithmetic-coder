@@ -16,11 +16,19 @@ except ImportError:
     pass  # python-dotenv not installed, that's okay for Cloud Run
 
 
-def get_model_path():
-    """Get model path from environment variable, downloading from GCS if needed."""
-    model_path = os.getenv("MODEL_PATH")
-    if not model_path:
+def get_model_path(raw_path=None):
+    """Get model path, downloading from GCS if needed."""
+    # Use provided raw_path or get from app state or env
+    if raw_path is None:
+        if hasattr(app, 'state') and hasattr(app.state, 'raw_model_path'):
+            raw_path = app.state.raw_model_path
+        else:
+            raw_path = os.getenv("MODEL_PATH")
+    
+    if not raw_path:
         raise ValueError("MODEL_PATH environment variable is not set")
+    
+    model_path = raw_path
     
     # If it's a GCS path (gs://), download it
     if model_path.startswith("gs://"):
@@ -59,13 +67,15 @@ def get_model_path():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # app.state.lm_compress = LMCompress("Qwen/Qwen3-4B")
-
-    # app.state.lm_compress = LMCompressCpp(
-    #     "/Users/liamwilbur/Desktop/College Stuff/CS109/llm-arithmetic-coder/backend/models/Llama-3.2-1B.Q5_K_M.gguf"
-    # )
-    model_path = get_model_path()
-    app.state.lm_compress = LMCompressCpp(model_path)
+    # Store the raw MODEL_PATH env var - don't download or process yet
+    # This allows the server to start quickly
+    raw_model_path = os.getenv("MODEL_PATH")
+    app.state.raw_model_path = raw_model_path
+    app.state.lm_compress = None  # Will be loaded on first request
+    if raw_model_path:
+        print(f"Model path configured (will download/load on first request): {raw_model_path}")
+    else:
+        print("WARNING: MODEL_PATH environment variable not set")
     yield
 
 
@@ -75,15 +85,36 @@ app.add_middleware(
 )
 
 
+def get_lm_compress():
+    """Lazy load the model on first request."""
+    if app.state.lm_compress is None:
+        if app.state.raw_model_path is None:
+            raise ValueError("MODEL_PATH environment variable is not set")
+        # Get the actual model path (downloads from GCS if needed)
+        print(f"Getting model path from: {app.state.raw_model_path}")
+        model_path = get_model_path(app.state.raw_model_path)
+        print(f"Loading model from {model_path}...")
+        app.state.lm_compress = LMCompressCpp(model_path)
+        print("Model loaded successfully")
+    return app.state.lm_compress
+
+
 @app.get("/")
 def hello():
     return {"message": "hello world"}
 
 
+@app.get("/health")
+def health():
+    """Health check endpoint that doesn't require model to be loaded."""
+    return {"status": "healthy", "model_loaded": app.state.lm_compress is not None}
+
+
 @app.post("/compress")
 def compress(text: str = Body(...)):
+    lm_compress = get_lm_compress()
     def generate():
-        for progress, result in app.state.lm_compress.compress_with_progress(text):
+        for progress, result in lm_compress.compress_with_progress(text):
             if result is None:
                 yield f"data: {json.dumps({'progress': progress})}\n\n"
             else:
@@ -94,12 +125,13 @@ def compress(text: str = Body(...)):
 
 @app.post("/decompress")
 def decompress(text: str = Body(...)):
+    lm_compress = get_lm_compress()
     def generate():
         for (
             progress,
             text_chunk,
             is_final,
-        ) in app.state.lm_compress.decompress_with_progress(text):
+        ) in lm_compress.decompress_with_progress(text):
             if is_final:
                 yield f"data: {json.dumps({'progress': 1.0, 'result': text_chunk})}\n\n"
             elif text_chunk:
