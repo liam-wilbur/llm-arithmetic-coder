@@ -5,3 +5,6 @@ transformers
 torch
 llama-cpp-python
 more-itertools
+google-cloud-storage
+python-dotenv
+numpy
