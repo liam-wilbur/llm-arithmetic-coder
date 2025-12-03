@@ -1,0 +1,30 @@
+# This file tells gcloud which files to upload when deploying from source.
+# Generated for Cloud Run buildpacks so only the Python backend is sent.
+
+# Always ignore itself and Git metadata
+.gcloudignore
+.git/
+.gitignore
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+
+# Frontend assets (handled separately, not part of backend service)
+frontend/
+node_modules/
+dist/
+build/
+
+# Local config files
+.env
+.DS_Store
+.python-version
+runtime.txt
+
