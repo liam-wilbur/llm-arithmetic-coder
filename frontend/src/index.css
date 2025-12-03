@@ -74,7 +74,7 @@
   --sidebar-ring: oklch(0.48 0.12 240);
 }
 
-@theme inline {
+/* @theme inline {
   --font-sans: "Inter", "Inter Fallback", system-ui, -apple-system;
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
@@ -113,7 +113,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-}
+} */
 
 @layer base {
   * {
