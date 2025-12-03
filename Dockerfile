@@ -22,10 +22,12 @@ COPY backend/ ./backend/
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 # Expose the port Cloud Run expects
 EXPOSE 8080
 
 # Run the application - Cloud Run sets PORT env var automatically
-CMD python3 -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1
+# Use sh -c to properly expand PORT environment variable
+CMD sh -c "python3 -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"
 
