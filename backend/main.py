@@ -1,12 +1,26 @@
 import json
 import os
+import sys
 import tempfile
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from lm_compress import LMCompress
-from lm_compress_cpp import LMCompressCpp
+
+# Add the backend directory to Python path to ensure imports work
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+try:
+    from lm_compress import LMCompress
+    from lm_compress_cpp import LMCompressCpp
+except ImportError as e:
+    print(f"ERROR: Failed to import modules: {e}")
+    print(f"Python path: {sys.path}")
+    print(f"Current directory: {os.getcwd()}")
+    print(f"Backend directory: {backend_dir}")
+    raise
 
 # Load .env file for local development (optional)
 try:
@@ -69,13 +83,18 @@ def get_model_path(raw_path=None):
 async def lifespan(app: FastAPI):
     # Store the raw MODEL_PATH env var - don't download or process yet
     # This allows the server to start quickly
-    raw_model_path = os.getenv("MODEL_PATH")
-    app.state.raw_model_path = raw_model_path
-    app.state.lm_compress = None  # Will be loaded on first request
-    if raw_model_path:
-        print(f"Model path configured (will download/load on first request): {raw_model_path}")
-    else:
-        print("WARNING: MODEL_PATH environment variable not set")
+    try:
+        raw_model_path = os.getenv("MODEL_PATH")
+        app.state.raw_model_path = raw_model_path
+        app.state.lm_compress = None  # Will be loaded on first request
+        if raw_model_path:
+            print(f"Model path configured (will download/load on first request): {raw_model_path}")
+        else:
+            print("WARNING: MODEL_PATH environment variable not set")
+    except Exception as e:
+        print(f"Error in lifespan startup: {e}")
+        app.state.raw_model_path = None
+        app.state.lm_compress = None
     yield
 
 

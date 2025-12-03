@@ -18,4 +18,5 @@ node_modules/
 models/
 *.gguf
 .DS_Store
-
+.python-version
+runtime.txt
