@@ -1,8 +1,5 @@
 {
   "build": {
-    "images": [
-      "us-central1-docker.pkg.dev/playground-479702/cloud-run-source-deploy/llm-arithmetic-coder-git:latest"
-    ],
     "options": {
       "logging": "CLOUD_LOGGING_ONLY",
       "requestedVerifyOption": "VERIFIED",
