@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Copy } from "lucide-react"
 import { toast } from "sonner"
 
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
+
 const EXAMPLES = [
   {
     name: "Declaration of Independence",
@@ -124,7 +127,7 @@ export function ArithmeticCoder() {
     setCompressProgress(0)
 
     try {
-      const res = await fetch("http://localhost:8000/compress", {
+      const res = await fetch(`${API_BASE}/compress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(compressInput),
@@ -162,7 +165,7 @@ export function ArithmeticCoder() {
     setDecompressProgress(0)
 
     try {
-      const res = await fetch("http://localhost:8000/decompress", {
+      const res = await fetch(`${API_BASE}/decompress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(decompressInput),
