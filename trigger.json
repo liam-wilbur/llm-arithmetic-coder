@@ -1,0 +1,92 @@
+{
+  "build": {
+    "images": [
+      "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+    ],
+    "options": {
+      "logging": "CLOUD_LOGGING_ONLY",
+      "requestedVerifyOption": "VERIFIED",
+      "substitutionOption": "ALLOW_LOOSE"
+    },
+    "steps": [
+      {
+        "args": [
+          "build",
+          "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA",
+          "--builder=gcr.io/buildpacks/builder:latest",
+          "--network=cloudbuild",
+          "--path=backend",
+          "--env=GOOGLE_ENTRYPOINT"
+        ],
+        "entrypoint": "pack",
+        "env": [
+          "GOOGLE_ENTRYPOINT=$_ENTRYPOINT"
+        ],
+        "id": "Buildpack",
+        "name": "gcr.io/k8s-skaffold/pack"
+      },
+      {
+        "args": [
+          "push",
+          "--all-tags",
+          "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME"
+        ],
+        "id": "Push",
+        "name": "gcr.io/cloud-builders/docker"
+      },
+      {
+        "args": [
+          "run",
+          "services",
+          "update",
+          "$_SERVICE_NAME",
+          "--image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA",
+          "--update-labels=managed-by=gcp-cloud-build-deploy-cloud-run,gcb-trigger-id=$_TRIGGER_ID,gcb-trigger-region=$LOCATION,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID",
+          "--region=$_DEPLOY_REGION",
+          "--quiet"
+        ],
+        "entrypoint": "gcloud",
+        "id": "Deploy",
+        "name": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+      }
+    ],
+    "substitutions": {
+      "_AR_HOSTNAME": "us-central1-docker.pkg.dev",
+      "_AR_PROJECT_ID": "playground-479702",
+      "_AR_REPOSITORY": "cloud-run-source-deploy",
+      "_DEPLOY_REGION": "us-central1",
+      "_ENTRYPOINT": "uvicorn main.app",
+      "_SERVICE_NAME": "llm-arithmetic-coder-git",
+      "_TRIGGER_ID": "7dc528c1-19f9-4267-bc8a-52deb51a4528"
+    },
+    "tags": [
+      "gcp-cloud-build-deploy-cloud-run",
+      "llm-arithmetic-coder-git"
+    ]
+  },
+  "createTime": "2025-12-01T03:00:22.132828218Z",
+  "description": "Build and deploy to Cloud Run service llm-arithmetic-coder-git on push to \"gh-pages\"",
+  "developerConnectEventConfig": {
+    "gitRepositoryLink": "projects/playground-479702/locations/europe-west1/connections/connection-bus2aui/gitRepositoryLinks/liam-wilbur-llm-arithmetic-coder",
+    "gitRepositoryLinkType": "GITHUB",
+    "push": {
+      "branch": "^main$"
+    }
+  },
+  "id": "7dc528c1-19f9-4267-bc8a-52deb51a4528",
+  "name": "cloudrun-llm-arithmetic-coder-git-us-central1-liam-wilbur-llcbk",
+  "resourceName": "projects/playground-479702/locations/europe-west1/triggers/7dc528c1-19f9-4267-bc8a-52deb51a4528",
+  "serviceAccount": "projects/playground-479702/serviceAccounts/180481079494-compute@developer.gserviceaccount.com",
+  "substitutions": {
+    "_AR_HOSTNAME": "us-central1-docker.pkg.dev",
+    "_AR_PROJECT_ID": "playground-479702",
+    "_AR_REPOSITORY": "cloud-run-source-deploy",
+    "_DEPLOY_REGION": "us-central1",
+    "_SERVICE_NAME": "llm-arithmetic-coder-git",
+    "_TRIGGER_ID": "7dc528c1-19f9-4267-bc8a-52deb51a4528"
+  },
+  "tags": [
+    "gcp-cloud-build-deploy-cloud-run",
+    "llm-arithmetic-coder-git"
+  ]
+}
