@@ -259,7 +259,7 @@ class LMCompressCpp:
 
 
 if __name__ == "__main__":
-    model_path = "/Users/dylanwilbur/llm_compress/backend/models/Qwen3-4B-Q4_K_M.gguf"
+    model_path = "/Users/liamwilbur/llm_compress/backend/models/Qwen3-4B-Q4_K_M.gguf"
 
     lm = LMCompressCpp(model_path)
     original = "The quick brown fox jumps over the lazy dog."

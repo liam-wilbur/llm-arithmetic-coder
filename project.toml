@@ -4,6 +4,9 @@
 id = "llm-arithmetic-coder"
 
 [[build.buildpacks]]
+id = "google.config.entrypoint"
+
+[[build.buildpacks]]
 id = "google.python.runtime"
 
 [[build.buildpacks]]

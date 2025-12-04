@@ -26,6 +26,7 @@ except ImportError as e:
 try:
     from dotenv import load_dotenv
     load_dotenv()
+    load_dotenv(os.path.join(backend_dir, ".env"))
 except ImportError:
     pass  # python-dotenv not installed, that's okay for Cloud Run
 
