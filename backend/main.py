@@ -30,7 +30,7 @@ try:
 except ImportError:
     pass  # python-dotenv not installed, that's okay for Cloud Run
 
-
+#
 def get_model_path(raw_path=None):
     """Get model path, downloading from GCS if needed."""
     # Use provided raw_path or get from app state or env
